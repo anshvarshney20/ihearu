@@ -234,36 +234,40 @@ const AppointmentManagement = () => {
             return [];
         }
     };
-    const delete_appointment = async (_id) => {
+    const delete_appointment = async (_id, cancellationReason) => {
         try {
             const authToken = localStorage.getItem('access');
             if (!authToken) {
                 throw new Error('Authentication token not found');
             }
-
+    
             const headers = {
                 'x-auth-token-admin': authToken,
+                'Content-Type': 'application/json',
             };
-
+    
+            const body = JSON.stringify({ cancelNote: cancellationReason });
+    
             const response = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/deleteSession/${_id}`, {
-                method: 'GET',
-                headers: {
-                    ...headers,
-                    'Content-Type': 'application/json',
-                },
+                method: 'POST',  // Use POST or another appropriate method
+                headers: headers,
+                body: body,
             });
-
+    
             if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+                const errorData = await response.json();
+                console.error('Error deleting appointment:', errorData);
+                // Handle errors accordingly
+                return;
             }
-
+    
             // Handle successful deletion if needed
             console.log('Appointment deleted successfully!');
-
+    
             // Fetch updated data after deleting the appointment
             const updatedData = await fetchUpdatedData();
             setdata(updatedData);
-
+    
         } catch (error) {
             console.error('Error deleting appointment:', error);
             // Handle errors accordingly
@@ -472,7 +476,6 @@ const AppointmentManagement = () => {
                                                     <th>Price</th>
                                                     <th>Listener name</th>
                                                     <th>Date and time</th>
-                                                    <th>category of issue</th>
                                                     <th>appointment status</th>
                                                     <th>Scheduled Appointment</th>
                                                     <th>Mode Of Communication</th>
@@ -493,7 +496,6 @@ const AppointmentManagement = () => {
                                                             <td>{item.amount}</td>
                                                             <td>{getListenerName(item.listener)}</td>
                                                             <td>{formatDate(item.date)}</td>
-                                                            <td></td>
                                                             <td>{item.status}</td>
                                                             <td>{item.time}</td>
                                                             <td>{item.communicationType}</td>
@@ -601,12 +603,13 @@ const AppointmentManagement = () => {
                                 className="form-design py-4 px-4 row"
                                 onSubmit={(e) => {
                                     e.preventDefault();
-                                    cancel_appointment(cancelAppointmentId);
+                                    const cancellationReason = e.target.elements.cancelNote.value;
+                                    cancel_appointment(cancelAppointmentId, cancellationReason);
                                 }}
                             >
                                 <div className="form-group col-12">
                                     <label htmlFor="">Cancel Reason</label>
-                                    <textarea className="form-control" name="reason" id="" style={{ height: '100px' }}></textarea>
+                                    <textarea className="form-control" name="cancelNote" id="" style={{ height: '100px' }}></textarea>
                                 </div>
                                 <div className="form-group mb-0 col-12 text-center">
                                     <button className="comman_btn d-inline-flex" type="submit">
