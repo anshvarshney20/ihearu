@@ -73,7 +73,7 @@ const ListenerView = () => {
                                             </div>
                                             <div class="form-group col-4">
                                                 <label for="">Listener Name</label>
-                                                <input disabled type="text" class="form-control" value={data?.fullName} />
+                                                <input disabled type="text" class="form-control" value={`${data?.firstName} ${data?.lastName}`} />
                                             </div>
                                             <div class="form-group col-4">
                                                 <label for="">Email ID</label>

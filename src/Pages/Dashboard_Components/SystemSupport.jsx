@@ -108,13 +108,13 @@ const SystemSupport = () => {
                                                     data.map((item, index) => (
                                                         <tr key={index}>
                                                             <td>{index + 1}</td>
-                                                            <td>{item.listener}</td>
-                                                            <td>Test Email</td>
-                                                            <td>+123456789</td>
-                                                            <td>Tuesday 20 2023</td>
+                                                            <td>{item.listener?.firstName}</td>
+                                                            <td>{item.listener?.email}</td>
+                                                            <td>{item.listener?.phoneNumber}</td>
+                                                            <td>{formatDate(item.updatedAt)}</td>
                                                             <td>{item.concern}</td>
 
-                                                            <td>{item.type}</td>
+                                                            <td>{item.type}</td> 
                                                             <td>In Progress</td>
                                                             <td>
                                                                 <a class="comman_btn table_viewbtn" href="javascript:;"><span>Yes</span></a>

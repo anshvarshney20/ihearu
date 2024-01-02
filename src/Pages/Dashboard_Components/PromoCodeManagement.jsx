@@ -12,6 +12,7 @@ const PromoCodeManagement = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredData, setFilteredData] = useState([]);
   const [startDate, setStartDate] = useState('');
+  const [toggle, setoggle] = useState(false)
   const [endDate, setEndDate] = useState('');
 
   const handleStartDateChange = (event) => {
@@ -25,26 +26,26 @@ const PromoCodeManagement = () => {
   const handleSearchs = () => {
     // Filter data based on date range
     const filtered = data.filter((item) => {
-        const itemDate = new Date(item.updatedAt);
-        const start = startDate ? new Date(startDate) : null;
-        const end = endDate ? new Date(endDate) : null;
+      const itemDate = new Date(item.updatedAt);
+      const start = startDate ? new Date(startDate) : null;
+      const end = endDate ? new Date(endDate) : null;
 
-        // Function to format date as yyyy-mm-dd
-        const formatDate = (date) => {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, '0');
-            const day = String(date.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        };
+      // Function to format date as yyyy-mm-dd
+      const formatDate = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
 
-        return (
-            (!start || formatDate(itemDate) >= formatDate(start)) &&
-            (!end || formatDate(itemDate) <= formatDate(end))
-        );
+      return (
+        (!start || formatDate(itemDate) >= formatDate(start)) &&
+        (!end || formatDate(itemDate) <= formatDate(end))
+      );
     });
 
     setFilteredData(filtered);
-};
+  };
 
   useEffect(() => {
     handleSearchs();
@@ -97,6 +98,9 @@ const PromoCodeManagement = () => {
     });
   };
 
+  const discount_toogle = () => {
+    setoggle((prevToggle) => !prevToggle);
+  }
   const addPromocode = async (e) => {
     e.preventDefault();
 
@@ -197,7 +201,7 @@ const PromoCodeManagement = () => {
                 </div>
               </div>
               <form class="form-design py-4 px-3 help-support-form row align-items-end justify-content-between" onSubmit={addPromocode}>
-                <div class="form-group col-4">
+                <div class="form-group col-6">
                   <label for="">Promo Code</label>
                   <input
                     type="text"
@@ -207,27 +211,10 @@ const PromoCodeManagement = () => {
                     onChange={handleInputChange}
                   />
                 </div>
-                <div class="form-group col-8">
+                <div class="form-group col-6">
                   <div class="row align-items-end">
-                    <div class="col-auto">
-                      <a class="change_value" onclick="toggleVisibility('Menu1');" href="javascript:;">Number of %
-                      </a>
-                      <a class="change_value" onclick="toggleVisibility('Menu2');" href="javascript:;">Fixed  Price</a>
-                    </div>
-                    <div id="Menu1" class="col form-group position-relative percentage_icons mb-0">
-                      <label for="">Number of % </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        value={promoCodeForm.discount}
-                        onChange={handleInputChange}
-                        name="discount"
-                      />
-                    </div>
-                    <div id="Menu2" class="form-group mb-0 col" style={{ display: "none" }}>
-                      <label for="">Fixed  Price</label>
-                      <input type="text" class="form-control" value="" name="name" id="name" />
-                    </div>
+                    <label for="">Number of Redeemable Times</label>
+                    <input type="text" class="form-control" />
                   </div>
                 </div>
                 <div class="form-group col-6">
@@ -250,13 +237,51 @@ const PromoCodeManagement = () => {
                     name="validTo"
                   />
                 </div>
-                <div class="form-group mb-0 col">
-                  <label for="">Number of Redeemable Times</label>
-                  <input type="text" class="form-control" />
+                <div className="form-group mb-0 col">
+                  <div id="Menu1" className="col form-group position-relative percentage_icons mb-0">
+                    <label htmlFor="">Choose Discount Type :</label>
+                    <div className="form-check form-check-inline">
+                      <input
+                        className="form-check-input"
+                        type="radio"
+                        onClick={discount_toogle}
+                        name="flexRadioDefault"
+                        id="flexRadioDefault1"
+                        checked={!toggle}
+                      />
+                      <label className="form-check-label" htmlFor="flexRadioDefault1">
+                        Flat Amount off
+                      </label>
+                    </div>
+                    <div className="form-check form-check-inline">
+                      <input
+                        className="form-check-input"
+                        onClick={discount_toogle}
+                        type="radio"
+                        name="flexRadioDefault"
+                        id="flexRadioDefault2"
+                        checked={toggle}
+                      />
+                      <label className="form-check-label" htmlFor="flexRadioDefault2">
+                        Flat Discount % off
+                      </label>
+                    </div>
+                  </div>
+                  <div id="Menu2" class="form-group mb-0 col" style={{ display: "none" }}>
+                    <label for="">Fixed  Price</label>
+                    <input type="text" class="form-control" value="" name="name" id="name" />
+                  </div>
+
                 </div>
                 <div class="form-group mb-0 col">
-                  <label for="">Amount</label>
-                  <input type="text" class="form-control" />
+                  <label for="">{toggle ? 'Discount %' : 'Amount'}</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={promoCodeForm.discount}
+                    onChange={handleInputChange}
+                    name="discount"
+                  />
                 </div>
                 <div class="form-group mb-0 col-2">
                   <button class="comman_btn d-flex w-100"><span>Add</span></button>
@@ -317,7 +342,7 @@ const PromoCodeManagement = () => {
                             <td>{item.discount}</td>
                             <td>{formatDate(item.validFrom)}</td>
                             <td>{formatDate(item.validTo)}</td>
-                            <td>60</td>
+                            <td>10</td>
                             <td>100 SGD</td>
                             <td>
                               <a className="comman_btn bg-danger table_viewbtn ms-1" href="javascript:;"><span>Delete</span></a>
@@ -453,8 +478,8 @@ const PromoCodeManagement = () => {
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </div >
+      </div >
 
     </>
   )

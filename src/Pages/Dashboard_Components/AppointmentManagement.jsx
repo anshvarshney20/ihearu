@@ -110,7 +110,7 @@ const AppointmentManagement = () => {
 
     const getListenerName = (listenerId) => {
         const matchedListener = listeners.find((listener) => listener._id === listenerId);
-        return matchedListener ? matchedListener.fullName : 'N/A';
+        return matchedListener ? matchedListener.firstName : 'N/A';
     };
 
     const cancel_appointment = async (_id) => {

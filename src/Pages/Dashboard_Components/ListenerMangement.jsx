@@ -11,38 +11,46 @@ const ListenerMangement = () => {
         const storedCat = localStorage.getItem('listener_stats');
         return storedCat ? JSON.parse(storedCat) : {};
     });
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
+    const [email, setEmail] = useState('');
+    const [profileDescription, setProfileDescription] = useState('');
+    const [experiences, setExperiences] = useState('');
+    const [commission, setCommission] = useState('');
+    const [serviceLanguage, setServiceLanguage] = useState('');
+    const [EditListenerId, setEditListenerId] = useState('')
+    const fetchUser = async () => {
+        try {
+            // Retrieve the authentication token from local storage
+            const authToken = localStorage.getItem('access');
+
+            // Check if the token exists
+            if (!authToken) {
+                throw new Error('Authentication token not found');
+            }
+
+            // Set up headers with the authentication token
+            const headers = {
+                'x-auth-token-admin': authToken,
+            };
+
+            // Make the HTTP request with headers
+            const response = await axios.get(`${apiBaseUrl}/api/admin/getAllListeners`, {
+                headers,
+            });
+
+            // Assuming the API response contains user data, you can access it like this:
+            const userData = response.data.results.listeners;
+
+            setdata(userData);
+        } catch (error) {
+            // Handle error scenarios here
+            console.error('Error fetching user data:', error);
+            throw error; // You may want to throw the error or handle it in a specific way.
+        }
+    };
 
     useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                // Retrieve the authentication token from local storage
-                const authToken = localStorage.getItem('access');
-
-                // Check if the token exists
-                if (!authToken) {
-                    throw new Error('Authentication token not found');
-                }
-
-                // Set up headers with the authentication token
-                const headers = {
-                    'x-auth-token-admin': authToken,
-                };
-
-                // Make the HTTP request with headers
-                const response = await axios.get(`${apiBaseUrl}/api/admin/getAllListeners`, {
-                    headers,
-                });
-
-                // Assuming the API response contains user data, you can access it like this:
-                const userData = response.data.results.listeners;
-
-                setdata(userData);
-            } catch (error) {
-                // Handle error scenarios here
-                console.error('Error fetching user data:', error);
-                throw error; // You may want to throw the error or handle it in a specific way.
-            }
-        };
         fetchUser();
     }, []);
     const listener_status = async (id) => {
@@ -52,14 +60,14 @@ const ListenerMangement = () => {
             const headers = {
                 'x-auth-token-admin': authToken,
             };
-    
+
             const response = await fetch(`${apiBaseUrl}/api/admin/changeListenerStatus/${id}`, {
                 method: 'GET',
                 headers: headers,
             });
-    
+
             const responseData = await response.json();
-    
+
             if (!responseData.error) {
                 // Update the local storage
                 setCat(prevCat => {
@@ -77,7 +85,133 @@ const ListenerMangement = () => {
             console.error('An error occurred:', error);
         }
     };
-    
+
+    const delete_listener = async (_id) => {
+        console.log(_id)
+        try {
+            const authToken = localStorage.getItem('access');
+            const headers = {
+                'x-auth-token-admin': authToken,
+            };
+
+            const response = await fetch(`${apiBaseUrl}/api/admin/deleteListener/${_id}`, {
+                method: 'GET',
+                headers: headers,
+            });
+
+            const responseData = await response.json();
+
+            if (!responseData.error) {
+                // If deletion is successful, update the local state or perform any other necessary actions
+                // For example, you can filter out the deleted listener from the data array:
+                setdata(prevData => prevData.filter(listener => listener._id !== _id));
+                alert('Listener deleted successfully.');
+            } else {
+                // Handle the case where an error occurred during deletion
+                alert(responseData.message);
+            }
+        } catch (error) {
+            console.error('An error occurred during listener deletion:', error);
+        }
+    };
+
+    const update_listener = async (_id) => {
+        console.log(_id)
+        try {
+            const authToken = localStorage.getItem('access');
+
+            if (!authToken) {
+                throw new Error('Authentication token not found');
+            }
+
+            const headers = {
+                'x-auth-token-admin': authToken,
+                'Content-Type': 'application/json',
+            };
+
+            const response = await fetch(
+                `${process.env.REACT_APP_API_URL}/api/admin/editListener/${_id}`,
+                {
+                    method: 'PATCH',
+                    headers: headers,
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            const listenerData = result.results.listener;
+
+            // Update state variables with fetched data
+            setEditListenerId(_id);
+            setFirstName(listenerData.firstName);
+            setLastName(listenerData.lastName)
+            setEmail(listenerData.email)
+            setProfileDescription(listenerData.profileDescription)
+            setExperiences(listenerData.experiences)
+
+            // ... (existing code)
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            throw error;
+        }
+    }
+    const updateListenerData = async () => {
+        try {
+            const authToken = localStorage.getItem('access');
+
+            if (!authToken) {
+                throw new Error('Authentication token not found');
+            }
+
+            const headers = {
+                'x-auth-token-admin': authToken,
+                'Content-Type': 'application/json',
+            };
+
+            // Prepare the request body
+            const requestBody = {
+                firstName,
+                lastName,
+                email,
+                profileDescription,
+                experiences,
+                commission,
+            };
+
+            // Determine whether to add or update based on EditListenerId
+
+            const response = await fetch(
+                `${process.env.REACT_APP_API_URL}/api/admin/editListener/${EditListenerId}`,
+                {
+                    method: 'PATCH',
+                    headers,
+                    body: JSON.stringify(requestBody),
+                }
+            );
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+
+            // Update state variables with fetched or added data
+            setEditListenerId('');
+            setFirstName('');
+            setLastName('');
+            setEmail('');
+            setProfileDescription('');
+            setExperiences('');
+            setCommission('');
+            setServiceLanguage('');
+            fetchUser()
+            // Reload the listener data
+        } catch (error) {
+            console.error('Error updating listener data:', error);
+            // Handle error as needed
+        }
+    };
     return (
         <>
             <div class="admin_main">
@@ -121,7 +255,7 @@ const ListenerMangement = () => {
                                     </form>
                                 </div>
                             </div>
-                            <form class="form-design py-4 px-3 help-support-form row align-items-end justify-content-between" action="">
+                            <form class="form-design py-4 px-3 help-support-form row align-items-end justify-content-between" onSubmit={(e) => e.preventDefault()}>
                                 <div class="form-group mb-0 col-5">
                                     <label for="">From</label>
                                     <input type="date" class="form-control" />
@@ -157,13 +291,13 @@ const ListenerMangement = () => {
                                                 {data.map((item, index) => (
                                                     <tr key={index}>
                                                         <td>{index + 1}</td>
-                                                        <td>{item.fullName}</td>
+                                                        <td>{`${item.firstName}${item.lastName}`}</td>
                                                         <td>{item.email}</td>
                                                         <td>{item.phoneNumber}</td>
                                                         <td>
                                                             {item.profileDescription}
                                                         </td>
-                                                        <td>{item.experience} yrs</td>
+                                                        <td>{item.experiences}</td>
                                                         <td>10%</td>
                                                         <td>{String(item.serviceLanguage).replace(/([a-z])([A-Z])/g, '$1 $2')}</td>
                                                         <td>
@@ -176,7 +310,7 @@ const ListenerMangement = () => {
                                                         </td>
                                                         <td>
                                                             <Link to={`/listener-view/${item._id}`} class="comman_btn table_viewbtn"><span>View</span></Link>
-                                                            <a class="comman_btn2 table_viewbtn ms-1" href="javascript:;" data-bs-toggle="modal" data-bs-target="#edit"><span>Edit</span></a>
+                                                            <a class="comman_btn2 table_viewbtn ms-1" href="javascript:;" data-bs-toggle="modal" data-bs-target="#edit" onClick={() => update_listener(item._id)}><span>Edit</span></a>
                                                             <a
                                                                 onClick={() => listener_status(item._id)}
                                                                 className={`comman_btn ${item.status ? 'black block' : 'bg-success unblock'} table_viewbtn ms-1`}
@@ -185,7 +319,8 @@ const ListenerMangement = () => {
                                                             >
                                                                 <span>{item.status ? 'Block' : 'Unblock'}</span>
                                                             </a>
-                                                            <a class="comman_btn bg-danger table_viewbtn ms-1" href="javascript:;"><span>Delete</span></a>
+                                                            <a class="comman_btn bg-danger table_viewbtn ms-1" href="javascript:;" onClick={() => delete_listener(item._id)}
+                                                            ><span>Delete</span></a>
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -207,46 +342,84 @@ const ListenerMangement = () => {
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body p-0">
-                            <form class="form-design py-4 px-4 row" action="">
+                            <form class="form-design py-4 px-4 row" onSubmit={(e) => e.preventDefault()}>
                                 <div class="form-group col-4">
-                                    <label for="">Listener Name</label>
-                                    <input type="text" class="form-control" value="Mohd. Arbab" />
+                                    <label for="">First Name</label>
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        name="firstName"
+                                        value={firstName}
+                                        onChange={(e) => setFirstName(e.target.value)}
+                                    />
+                                </div>
+                                <div class="form-group col-4">
+                                    <label for="">Last Name</label>
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        name="lastName"
+                                        value={lastName}
+                                        onChange={(e) => setLastName(e.target.value)}
+                                    />
                                 </div>
                                 <div class="form-group col-4">
                                     <label for="">Email ID</label>
-                                    <input type="text" value="xyz@gmail.com" class="form-control" />
-                                </div>
-                                <div class="form-group col-4">
-                                    <label for="">Mobile Number</label>
-                                    <input type="text" value="+65 234234234" class="form-control" />
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        name="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                    />
                                 </div>
                                 <div class="form-group col-12">
                                     <label for="">Listener Details</label>
-                                    <textarea class="form-control" name="" id="" style={{ height: "60px" }}>Master of Counselling and Practising for 5 years.</textarea>
+                                    <textarea
+                                        class="form-control"
+                                        name="profileDescription"
+                                        id=""
+                                        style={{ height: "60px" }}
+                                        value={profileDescription}
+                                        onChange={(e) => setProfileDescription(e.target.value)}
+                                    ></textarea>
                                 </div>
                                 <div class="form-group col-4">
                                     <label for="">Experience</label>
-                                    <input type="text" value="7 Years" class="form-control" />
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        name="experiences"
+                                        value={experiences}
+                                        onChange={(e) => setExperiences(e.target.value)}
+                                    />
                                 </div>
                                 <div class="form-group col-4">
                                     <label for="">Commission</label>
-                                    <input type="text" value="10%" class="form-control" />
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        name="commission"
+                                        value={commission}
+                                        onChange={(e) => setCommission(e.target.value)}
+                                    />
                                 </div>
                                 <div class="form-group col-4">
                                     <label for="">Language Proficiency</label>
-                                    <input type="text" value="English , German , French" class="form-control" />
-                                </div>
-                                <div class="form-group col-6">
-                                    <label for="">Booked Appointment Details</label>
-                                    <input type="text" value="Friday, 11 August 2023, 8PM Video Call" class="form-control" />
-                                </div>
-                                <div class="form-group col-6">
-                                    <label for="">Classify listener</label>
-                                    <input type="text" value="Listener+" class="form-control" />
+                                    <input
+                                        type="text"
+                                        class="form-control"
+                                        name='serviceLanguage'
+                                        value={serviceLanguage}
+                                        onChange={(e) => setServiceLanguage(e.target.value)}
+                                    />
                                 </div>
                                 <div class="form-group mb-0 col-12 text-center">
-                                    <button class="comman_btn d-inline-flex" data-bs-dismiss="modal"><span>Update</span></button>
+                                    <button class="comman_btn d-inline-flex" onClick={()=>updateListenerData()}data-bs-dismiss="modal">
+                                        <span>Update</span>
+                                    </button>
                                 </div>
+
                             </form>
                         </div>
                     </div>

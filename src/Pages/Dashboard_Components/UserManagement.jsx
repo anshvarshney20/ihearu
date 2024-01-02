@@ -12,34 +12,41 @@ const UserManagement = () => {
         const storedCat = localStorage.getItem('userstats');
         return storedCat ? JSON.parse(storedCat) : {};
     });
+    const [fullName, setFullName] = useState('');
+    const [callerId, setCallerId] = useState('');
+    const [birthYear, setBirthYear] = useState('');
+    const [gender, setGender] = useState('');
+    const [transactionDetails, setTransactionDetails] = useState('');
+    const [email, setEmail] = useState('');
+    const [appointmentDetails, setAppointmentDetails] = useState('');
 
     const apiBaseUrl = process.env.REACT_APP_API_URL;
+    const fetchUser = async () => {
+        try {
+            const authToken = localStorage.getItem('access');
+            if (!authToken) {
+                throw new Error('Authentication token not found');
+            }
+
+            const headers = {
+                'x-auth-token-admin': authToken,
+            };
+
+            const response = await axios.get(`${apiBaseUrl}/api/admin/getAllCallers`, {
+                headers,
+            });
+
+            const userData = response.data.results.callers;
+            setOriginalData(userData);
+            setFilteredData(userData);
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            throw error;
+        }
+    };
+
 
     useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const authToken = localStorage.getItem('access');
-                if (!authToken) {
-                    throw new Error('Authentication token not found');
-                }
-
-                const headers = {
-                    'x-auth-token-admin': authToken,
-                };
-
-                const response = await axios.get(`${apiBaseUrl}/api/admin/getAllCallers`, {
-                    headers,
-                });
-
-                const userData = response.data.results.callers;
-                setOriginalData(userData);
-                setFilteredData(userData);
-            } catch (error) {
-                console.error('Error fetching user data:', error);
-                throw error;
-            }
-        };
-
         fetchUser();
     }, [apiBaseUrl]);
 
@@ -51,7 +58,7 @@ const UserManagement = () => {
                 'x-auth-token-admin': authToken,
             };
 
-            const response = await fetch(`${apiBaseUrl}/api/admin/changeCallerStatus/${id}`, {
+            const response = await fetch(`${apiBaseUrl}/api/admin/blockCaller/${id}`, {
                 method: 'GET',
                 headers: headers,
             });
@@ -61,7 +68,7 @@ const UserManagement = () => {
             if (!responseData.error) {
                 // Update the originalData and filteredData directly
                 const updatedData = originalData.map(item =>
-                    item._id === id ? { ...item, status: !item.status } : item
+                    item._id === id ? { ...item, isblocked: !item.isblocked } : item
                 );
 
                 setOriginalData(updatedData);
@@ -92,6 +99,133 @@ const UserManagement = () => {
             )
         );
         setFilteredData(filtered);
+    };
+
+    const delete_user = async (_id) => {
+        try {
+            const authToken = localStorage.getItem('access');
+            const headers = {
+                'x-auth-token-admin': authToken,
+            };
+
+            const response = await fetch(`${apiBaseUrl}/api/admin/deleteCaller/${_id}`, {
+                method: 'GET',
+                headers: headers,
+            });
+
+            const responseData = await response.json();
+
+            if (!responseData.error) {
+                // If deletion is successful, update the originalData and filteredData directly
+                const updatedData = originalData.filter(item => item._id !== _id);
+
+                setOriginalData(updatedData);
+                setFilteredData(updatedData);
+
+                // Update the local storage
+                setCat(prevCat => {
+                    const updatedCat = { ...prevCat };
+                    delete updatedCat[_id];
+                    localStorage.setItem('userstats', JSON.stringify(updatedCat));
+                    return updatedCat;
+                });
+
+                alert('User deleted successfully.');
+            } else {
+                // Handle the case where an error occurred during deletion
+                alert(responseData.message);
+            }
+        } catch (error) {
+            console.error('An error occurred during user deletion:', error);
+        }
+    };
+    const update_user = async (_id) => {
+        console.log(_id)
+        try {
+            const authToken = localStorage.getItem('access');
+
+            if (!authToken) {
+                throw new Error('Authentication token not found');
+            }
+
+            const headers = {
+                'x-auth-token-admin': authToken,
+                'Content-Type': 'application/json',
+            };
+
+            const response = await fetch(
+                `${process.env.REACT_APP_API_URL}/api/admin/editCaller/${_id}`,
+                {
+                    method: 'PATCH',
+                    headers: headers,
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            const callerData = result.results.caller;
+
+            // Update state variables with fetched data
+            setCallerId(_id)
+            setFullName(callerData.fullName);
+            setEmail(callerData.email)
+            setBirthYear(callerData.birthYear)
+            setGender(callerData.gender)
+            // ... (existing code)
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            throw error;
+        }
+    }
+    const updateCallerData = async () => {
+        try {
+            const authToken = localStorage.getItem('access');
+
+            if (!authToken) {
+                throw new Error('Authentication token not found');
+            }
+
+            const headers = {
+                'x-auth-token-admin': authToken,
+                'Content-Type': 'application/json',
+            };
+
+            // Prepare the request body
+            const requestBody = {
+                fullName,
+                email,
+                birthYear,
+                gender
+            };
+
+            // Determine whether to add or update based on EditListenerId
+
+            const response = await fetch(
+                `${process.env.REACT_APP_API_URL}/api/admin/editCaller/${callerId}`,
+                {
+                    method: 'PATCH',
+                    headers,
+                    body: JSON.stringify(requestBody),
+                }
+            );
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            setFullName('')
+            setGender('')
+            setEmail('')
+            setBirthYear('')
+            // Update state variables with fetched or added data
+            fetchUser()
+            // Reload the listener data
+        } catch (error) {
+            console.error('Error updating listener data:', error);
+            // Handle error as needed
+        }
     };
 
     return (
@@ -164,7 +298,7 @@ const UserManagement = () => {
                                                 {filteredData.map((item, index) => (
                                                     <tr key={index}>
                                                         <td>{index + 1}</td>
-                                                        <td>{item.fullName}</td>
+                                                        <td>{`${item.firstName}${item.lastName}`}</td>
                                                         <td>{item.birthYear}</td>
                                                         <td>{item.gender}</td>
                                                         <td>{item.email}</td>
@@ -173,15 +307,15 @@ const UserManagement = () => {
                                                         <td>{item.transactionDetails}</td>
                                                         <td>
                                                             <Link to={`/user-view/${item._id}`} className="comman_btn table_viewbtn" ><span>View</span></Link>
-                                                            <a className="comman_btn2 table_viewbtn ms-1" href="javascript:;" data-bs-toggle="modal" data-bs-target="#edit"><span>Edit</span></a>
+                                                            <a className="comman_btn2 table_viewbtn ms-1" href="javascript:;" data-bs-toggle="modal" data-bs-target="#edit" onClick={() => update_user(item._id)}><span>Edit</span></a>
                                                             <a
                                                                 onClick={() => user_status(item._id)}
-                                                                className={`comman_btn ${item.status ? 'black block' : 'bg-success unblock'} table_viewbtn ms-1`}
+                                                                className={`comman_btn ${item.isblocked ? 'black block' : 'bg-success unblock'} table_viewbtn ms-1`}
                                                                 href="javascript:;"
                                                             >
-                                                                <span>{item.status ? 'Block' : 'Unblock'}</span>
+                                                                <span>{item.isblocked ? 'Block' : 'Unblock'}</span>
                                                             </a>
-                                                            <a className="comman_btn bg-danger table_viewbtn ms-1" href="javascript:;"><span>Delete</span></a>
+                                                            <a className="comman_btn bg-danger table_viewbtn ms-1" href="javascript:;" onClick={() => delete_user(item._id)}><span>Delete</span></a>
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -202,43 +336,33 @@ const UserManagement = () => {
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body p-0">
-                            <form class="form-design py-4 px-4 row" action="">
-                                <div class="form-group col-4">
-                                    <label for="">First Name</label>
-                                    <input type="text" class="form-control" value="Jennifer" />
+                            <form className="form-design py-4 px-4 row" onSubmit={(e) => e.preventDefault()}>
+                                <div className="form-group col-8">
+                                    <label htmlFor="firstName">Full Name</label>
+                                    <input type="text" className="form-control" name="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} />
                                 </div>
-                                <div class="form-group col-4">
-                                    <label for="">Last Name</label>
-                                    <input type="text" class="form-control" value="Garcia" />
+                                <div className="form-group col-4">
+                                    <label htmlFor="birthYear">Year Of Birth</label>
+                                    <input type="text" className="form-control" name="birthYear" value={birthYear} onChange={(e) => setBirthYear(e.target.value)} />
                                 </div>
-                                <div class="form-group col-4">
-                                    <label for="">Year Of Birth</label>
-                                    <input type="text" class="form-control" value="09/09/1991" />
+                                <div className="form-group col-6">
+                                    <label htmlFor="gender">Gender</label>
+                                    <input type="text" className="form-control" name="gender" value={gender} onChange={(e) => setGender(e.target.value)} />
                                 </div>
-                                <div class="form-group col-6">
-                                    <label for="">Gender</label>
-                                    <input type="text" class="form-control" value="Female" />
+                                <div className="form-group col-6">
+                                    <label htmlFor="transactionDetails">Transaction Details</label>
+                                    <input type="text" value={transactionDetails} className="form-control" onChange={(e) => setTransactionDetails(e.target.value)} />
                                 </div>
-                                <div class="form-group col-6">
-                                    <label for="">Email Id</label>
-                                    <input type="text" value="xyz@gmail.com" class="form-control" />
+                                <div className="form-group col-12">
+                                    <label htmlFor="email">Email Id</label>
+                                    <input type="text" value={email} name="email" className="form-control" onChange={(e) => setEmail(e.target.value)} />
                                 </div>
-                                <div class="form-group col-6">
-                                    <label for="">Mobile Number</label>
-                                    <input type="text" value="+65 234234234" class="form-control" />
+                                <div className="form-group col-12">
+                                    <label htmlFor="appointmentDetails">Appointment Details</label>
+                                    <textarea className="form-control" name="appointmentDetails" id="appointmentDetails" style={{ height: "100px" }} value={appointmentDetails} onChange={(e) => setAppointmentDetails(e.target.value)}></textarea>
                                 </div>
-                                <div class="form-group col-6">
-                                    <label for="">Transaction Details
-                                    </label>
-                                    <input type="text" value="Debit Card" class="form-control" />
-                                </div>
-                                <div class="form-group col-12">
-                                    <label for="">Appointment Details</label>
-                                    <textarea class="form-control" name="" id="" style={{ height: "100px" }}>Lorem ipsum dolor sit amet consectetur adipisicing elit.</textarea>
-                                </div>
-
-                                <div class="form-group mb-0 col-12 text-center">
-                                    <button class="comman_btn d-inline-flex" data-bs-dismiss="modal"><span>Update</span></button>
+                                <div className="form-group mb-0 col-12 text-center">
+                                    <button className="comman_btn d-inline-flex" data-bs-dismiss="modal" onClick={() => updateCallerData()}><span>Update</span></button>
                                 </div>
                             </form>
                         </div>
