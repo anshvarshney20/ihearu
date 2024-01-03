@@ -8,6 +8,8 @@ const PromoCodeManagement = () => {
     validFrom: '',
     validTo: '',
     discount: '',
+    discountType: '',
+    redeemableTime: ''
   });
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredData, setFilteredData] = useState([]);
@@ -26,62 +28,68 @@ const PromoCodeManagement = () => {
   const handleSearchs = () => {
     // Filter data based on date range
     const filtered = data.filter((item) => {
-      const itemDate = new Date(item.updatedAt);
-      const start = startDate ? new Date(startDate) : null;
-      const end = endDate ? new Date(endDate) : null;
+      // Check if item is defined and has the updatedAt property
+      if (item && item.updatedAt) {
+        const itemDate = new Date(item.updatedAt);
+        const start = startDate ? new Date(startDate) : null;
+        const end = endDate ? new Date(endDate) : null;
 
-      // Function to format date as yyyy-mm-dd
-      const formatDate = (date) => {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-      };
+        // Function to format date as yyyy-mm-dd
+        const formatDate = (date) => {
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        };
 
-      return (
-        (!start || formatDate(itemDate) >= formatDate(start)) &&
-        (!end || formatDate(itemDate) <= formatDate(end))
-      );
+        return (
+          (!start || formatDate(itemDate) >= formatDate(start)) &&
+          (!end || formatDate(itemDate) <= formatDate(end))
+        );
+      }
+      return false; // Ignore undefined or items without updatedAt property
     });
 
     setFilteredData(filtered);
   };
 
+
   useEffect(() => {
     handleSearchs();
   }, [startDate, endDate, data]);
-  useEffect(() => {
-    const fetchPromocode = async () => {
-      try {
-        const authToken = localStorage.getItem('access');
-        if (!authToken) {
-          throw new Error('Authentication token not found');
-        }
-
-        const headers = {
-          'x-auth-token-admin': authToken,
-        };
-
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/getAllPromocodes`, {
-          method: 'POST',
-          headers: {
-            ...headers,
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const userData = await response.json();
-        setData(userData.results.promocodes);
-      } catch (error) {
-        console.error('Error fetching promo codes:', error);
-        // Handle errors accordingly
+  const fetchPromocode = async () => {
+    try {
+      const authToken = localStorage.getItem('access');
+      if (!authToken) {
+        throw new Error('Authentication token not found');
       }
-    };
 
+      const headers = {
+        'x-auth-token-admin': authToken,
+      };
+
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/getAllPromocodes`, {
+        method: 'POST',
+        headers: {
+          ...headers,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const userData = await response.json();
+      setData(userData.results.promocodes);
+    } catch (error) {
+      console.error('Error fetching promo codes:', error);
+      // Handle errors accordingly
+    }
+  };
+
+
+  useEffect(() => {
     fetchPromocode();
   }, []);
 
@@ -134,6 +142,8 @@ const PromoCodeManagement = () => {
         validFrom: formattedvalidFrom,
         validTo: formattedvalidTo,
         discount: discount,
+        discountType: toggle ? 'Percent' : 'Amount',
+        redeemableTime: promoCodeForm.redeemableTime,
       };
 
       const response = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/addPromocode`, {
@@ -157,6 +167,8 @@ const PromoCodeManagement = () => {
         validFrom: '',
         validTo: '',
         discount: '',
+        discountType: '',
+        redeemableTime: ''
       });
     } catch (error) {
       console.error('Error adding promo code:', error.message);
@@ -176,11 +188,52 @@ const PromoCodeManagement = () => {
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
+  const delete_promocode = async (_id) => {
+    try {
+        const authToken = localStorage.getItem('access');
+        if (!authToken) {
+            throw new Error('Authentication token not found');
+        }
+
+        const headers = {
+            'x-auth-token-admin': authToken,
+            'Content-Type': 'application/json',
+        };
+
+
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/deletePromocode/${_id}`, {
+            method: 'GET',  // Use POST or another appropriate method
+            headers: headers,
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Error deleting promocode:', errorData);
+            // Handle errors accordingly
+            return;
+        }
+
+        // Handle successful deletion if needed
+        console.log('Promocode deleted successfully!');
+
+        // Fetch updated data after deleting the appointment
+fetchPromocode();
+
+    } catch (error) {
+        console.error('Error deleting appointment:', error);
+        // Handle errors accordingly
+    }
+};
 
   const handleSearch = () => {
-    const filtered = data.filter((item) =>
-      item.name.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filtered = filteredData.filter((item) => {
+      // Check if item is defined and has the name property
+      if (item && item.name) {
+        return item.name.toLowerCase().includes(searchQuery.toLowerCase());
+      }
+      return false; // Ignore undefined or items without name property
+    });
+
     setFilteredData(filtered);
   };
 
@@ -214,7 +267,9 @@ const PromoCodeManagement = () => {
                 <div class="form-group col-6">
                   <div class="row align-items-end">
                     <label for="">Number of Redeemable Times</label>
-                    <input type="text" class="form-control" />
+                    <input type="text" name='redeemableTime' value={promoCodeForm.redeemableTime}
+                      onChange={handleInputChange}
+                      class="form-control" />
                   </div>
                 </div>
                 <div class="form-group col-6">
@@ -245,7 +300,7 @@ const PromoCodeManagement = () => {
                         className="form-check-input"
                         type="radio"
                         onClick={discount_toogle}
-                        name="flexRadioDefault"
+                        name="Amount"
                         id="flexRadioDefault1"
                         checked={!toggle}
                       />
@@ -258,7 +313,7 @@ const PromoCodeManagement = () => {
                         className="form-check-input"
                         onClick={discount_toogle}
                         type="radio"
-                        name="flexRadioDefault"
+                        name="Percent"
                         id="flexRadioDefault2"
                         checked={toggle}
                       />
@@ -326,26 +381,27 @@ const PromoCodeManagement = () => {
                         <tr>
                           <th>S.No.</th>
                           <th>Promo code Name</th>
-                          <th>Number of %</th>
+                          <th>Discount Type</th>
+                          <th>Discount Value</th>
                           <th>Start Date</th>
                           <th>End Date</th>
                           <th>Number of Redeemable Times</th>
-                          <th>Amount</th>
                           <th>Action</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {filteredData.map((item, index) => (
+                        {data.map((item, index) => (
                           <tr key={index}>
                             <td>{index + 1}</td>
                             <td>{item?.name}</td>
-                            <td>{item.discount}</td>
-                            <td>{formatDate(item.validFrom)}</td>
-                            <td>{formatDate(item.validTo)}</td>
-                            <td>10</td>
-                            <td>100 SGD</td>
+                            <td>{item?.discountType}</td>
+                            <td>{item?.discount}</td>
+                            <td>{formatDate(item?.validFrom)}</td>
+                            <td>{formatDate(item?.validTo)}</td>
+                            <td>{item?.redeemableTime}</td>
                             <td>
-                              <a className="comman_btn bg-danger table_viewbtn ms-1" href="javascript:;"><span>Delete</span></a>
+                              <a className="comman_btn bg-danger table_viewbtn ms-1" href="javascript:;" onClick={() => delete_promocode(item?._id)}
+                              ><span>Delete</span></a>
                             </td>
                           </tr>
                         ))}
