@@ -66,10 +66,15 @@ const UserView = () => {
                                     </div>
                                     <div class="col-10">
                                         <div class="row">
-                                            <div class="form-group col-12">
-                                                <label for="">Full Name</label>
-                                                <input disabled type="text" class="form-control" value={data?.fullName} />
+                                            <div class="form-group col-6">
+                                                <label for="">First Name</label>
+                                                <input disabled type="text" class="form-control" value={data?.firstName} />
                                             </div>
+                                            <div class="form-group col-6">
+                                                <label for="">Last Name</label>
+                                                <input disabled type="text" class="form-control" value={data?.lastName} />
+                                            </div>
+
                                             <div class="form-group col-4">
                                                 <label for="">Year Of Birth</label>
                                                 <input disabled type="text" class="form-control" value={data?.birthYear} />

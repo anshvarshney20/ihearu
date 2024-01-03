@@ -12,7 +12,8 @@ const UserManagement = () => {
         const storedCat = localStorage.getItem('userstats');
         return storedCat ? JSON.parse(storedCat) : {};
     });
-    const [fullName, setFullName] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName] = useState('');
     const [callerId, setCallerId] = useState('');
     const [birthYear, setBirthYear] = useState('');
     const [gender, setGender] = useState('');
@@ -170,7 +171,8 @@ const UserManagement = () => {
 
             // Update state variables with fetched data
             setCallerId(_id)
-            setFullName(callerData.fullName);
+            setFirstName(callerData.firstName);
+            setLastName(callerData.lastName)
             setEmail(callerData.email)
             setBirthYear(callerData.birthYear)
             setGender(callerData.gender)
@@ -195,7 +197,8 @@ const UserManagement = () => {
 
             // Prepare the request body
             const requestBody = {
-                fullName,
+                firstName,
+                lastName,
                 email,
                 birthYear,
                 gender
@@ -215,7 +218,8 @@ const UserManagement = () => {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
 
-            setFullName('')
+            setFirstName('')
+            setLastName('')
             setGender('')
             setEmail('')
             setBirthYear('')
@@ -284,7 +288,8 @@ const UserManagement = () => {
                                             <thead>
                                                 <tr>
                                                     <th>S.No.</th>
-                                                    <th>Full name</th>
+                                                    <th>First Name</th>
+                                                    <th>Last Name</th>
                                                     <th>year of birth</th>
                                                     <th>gender</th>
                                                     <th>Email Id</th>
@@ -298,7 +303,8 @@ const UserManagement = () => {
                                                 {filteredData.map((item, index) => (
                                                     <tr key={index}>
                                                         <td>{index + 1}</td>
-                                                        <td>{`${item.firstName}${item.lastName}`}</td>
+                                                        <td>{item.firstName}</td>
+                                                        <td>{item.lastName}</td>
                                                         <td>{item.birthYear}</td>
                                                         <td>{item.gender}</td>
                                                         <td>{item.email}</td>
@@ -310,10 +316,10 @@ const UserManagement = () => {
                                                             <a className="comman_btn2 table_viewbtn ms-1" href="javascript:;" data-bs-toggle="modal" data-bs-target="#edit" onClick={() => update_user(item._id)}><span>Edit</span></a>
                                                             <a
                                                                 onClick={() => user_status(item._id)}
-                                                                className={`comman_btn ${item.isblocked ? 'black block' : 'bg-success unblock'} table_viewbtn ms-1`}
+                                                                className={`comman_btn ${item.isblocked ? 'bg-success unblock' : 'black block'} table_viewbtn ms-1`}
                                                                 href="javascript:;"
                                                             >
-                                                                <span>{item.isblocked ? 'Block' : 'Unblock'}</span>
+                                                                <span>{item.isblocked ? 'Unblock' : 'Block'}</span>
                                                             </a>
                                                             <a className="comman_btn bg-danger table_viewbtn ms-1" href="javascript:;" onClick={() => delete_user(item._id)}><span>Delete</span></a>
                                                         </td>
@@ -337,10 +343,15 @@ const UserManagement = () => {
                         </div>
                         <div class="modal-body p-0">
                             <form className="form-design py-4 px-4 row" onSubmit={(e) => e.preventDefault()}>
-                                <div className="form-group col-8">
-                                    <label htmlFor="firstName">Full Name</label>
-                                    <input type="text" className="form-control" name="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+                                <div className="form-group col-4">
+                                    <label htmlFor="firstName">First Name</label>
+                                    <input type="text" className="form-control" name="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
                                 </div>
+                                <div className="form-group col-4">
+                                    <label htmlFor="firstName">Last Name</label>
+                                    <input type="text" className="form-control" name="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+                                </div>
+
                                 <div className="form-group col-4">
                                     <label htmlFor="birthYear">Year Of Birth</label>
                                     <input type="text" className="form-control" name="birthYear" value={birthYear} onChange={(e) => setBirthYear(e.target.value)} />

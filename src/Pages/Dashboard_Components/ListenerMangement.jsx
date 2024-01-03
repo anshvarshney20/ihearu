@@ -11,14 +11,17 @@ const ListenerMangement = () => {
         const storedCat = localStorage.getItem('listener_stats');
         return storedCat ? JSON.parse(storedCat) : {};
     });
-    const [firstName, setFirstName] = useState('');
-    const [lastName, setLastName] = useState('');
+    const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [profileDescription, setProfileDescription] = useState('');
     const [experiences, setExperiences] = useState('');
     const [commission, setCommission] = useState('');
     const [serviceLanguage, setServiceLanguage] = useState('');
     const [EditListenerId, setEditListenerId] = useState('')
+    const [originalData, setOriginalData] = useState([]);
+    const [filteredData, setFilteredData] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+
     const fetchUser = async () => {
         try {
             // Retrieve the authentication token from local storage
@@ -41,6 +44,8 @@ const ListenerMangement = () => {
 
             // Assuming the API response contains user data, you can access it like this:
             const userData = response.data.results.listeners;
+            setOriginalData(userData);
+            setFilteredData(userData);
 
             setdata(userData);
         } catch (error) {
@@ -53,6 +58,16 @@ const ListenerMangement = () => {
     useEffect(() => {
         fetchUser();
     }, []);
+    const handleSearch = () => {
+        const searchTermLowerCase = searchTerm.toLowerCase();
+        const filtered = originalData.filter((item) =>
+            Object.values(item).some(
+                (value) => typeof value === 'string' && value.toLowerCase().includes(searchTermLowerCase)
+            )
+        );
+        setFilteredData(filtered);
+    };
+
     const listener_status = async (id) => {
         console.log(id);
         try {
@@ -61,7 +76,7 @@ const ListenerMangement = () => {
                 'x-auth-token-admin': authToken,
             };
 
-            const response = await fetch(`${apiBaseUrl}/api/admin/changeListenerStatus/${id}`, {
+            const response = await fetch(`${apiBaseUrl}/api/admin/blockListener/${id}`, {
                 method: 'GET',
                 headers: headers,
             });
@@ -69,15 +84,23 @@ const ListenerMangement = () => {
             const responseData = await response.json();
 
             if (!responseData.error) {
+                // Update the originalData and filteredData directly
+                const updatedData = originalData.map(item =>
+                    item._id === id ? { ...item, isblocked: !item.isblocked } : item
+                );
+
+                setOriginalData(updatedData);
+                setFilteredData(updatedData);
+
                 // Update the local storage
-                setCat(prevCat => {
-                    const updatedCat = {
-                        ...prevCat,
-                        [id]: !prevCat[id]
-                    };
-                    localStorage.setItem('listener_stats', JSON.stringify(updatedCat));
-                    return updatedCat;
-                });
+                setCat(prevCat => ({
+                    ...prevCat,
+                    [id]: !prevCat[id]
+                }));
+                localStorage.setItem('userstats', JSON.stringify({
+                    ...cat,
+                    [id]: !cat[id]
+                }));
             } else {
                 alert(responseData.message);
             }
@@ -104,7 +127,7 @@ const ListenerMangement = () => {
             if (!responseData.error) {
                 // If deletion is successful, update the local state or perform any other necessary actions
                 // For example, you can filter out the deleted listener from the data array:
-                setdata(prevData => prevData.filter(listener => listener._id !== _id));
+                setFilteredData(prevData => prevData.filter(listener => listener._id !== _id));
                 alert('Listener deleted successfully.');
             } else {
                 // Handle the case where an error occurred during deletion
@@ -146,8 +169,7 @@ const ListenerMangement = () => {
 
             // Update state variables with fetched data
             setEditListenerId(_id);
-            setFirstName(listenerData.firstName);
-            setLastName(listenerData.lastName)
+            setFullName(listenerData.fullName);
             setEmail(listenerData.email)
             setProfileDescription(listenerData.profileDescription)
             setExperiences(listenerData.experiences)
@@ -173,8 +195,7 @@ const ListenerMangement = () => {
 
             // Prepare the request body
             const requestBody = {
-                firstName,
-                lastName,
+                fullName,
                 email,
                 profileDescription,
                 experiences,
@@ -198,8 +219,7 @@ const ListenerMangement = () => {
 
             // Update state variables with fetched or added data
             setEditListenerId('');
-            setFirstName('');
-            setLastName('');
+            setFullName('');
             setEmail('');
             setProfileDescription('');
             setExperiences('');
@@ -247,9 +267,17 @@ const ListenerMangement = () => {
                                     <h2>Listener Management</h2>
                                 </div>
                                 <div class="col-3">
-                                    <form class="form-design" action="">
-                                        <div class="form-group mb-0 position-relative icons_set">
-                                            <input type="text" class="form-control" placeholder="Search" name="name" id="name" />
+                                    <form className="form-design" onSubmit={(e) => { e.preventDefault(); handleSearch(); }}>
+                                        <div className="form-group mb-0 position-relative icons_set">
+                                            <input
+                                                type="text"
+                                                className="form-control"
+                                                placeholder="Search"
+                                                name="name"
+                                                id="name"
+                                                value={searchTerm}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                            />
                                             <i class="far fa-search"></i>
                                         </div>
                                     </form>
@@ -288,10 +316,10 @@ const ListenerMangement = () => {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {data.map((item, index) => (
+                                                {filteredData.map((item, index) => (
                                                     <tr key={index}>
                                                         <td>{index + 1}</td>
-                                                        <td>{`${item.firstName}${item.lastName}`}</td>
+                                                        <td>{item.fullName}</td>
                                                         <td>{item.email}</td>
                                                         <td>{item.phoneNumber}</td>
                                                         <td>
@@ -313,11 +341,11 @@ const ListenerMangement = () => {
                                                             <a class="comman_btn2 table_viewbtn ms-1" href="javascript:;" data-bs-toggle="modal" data-bs-target="#edit" onClick={() => update_listener(item._id)}><span>Edit</span></a>
                                                             <a
                                                                 onClick={() => listener_status(item._id)}
-                                                                className={`comman_btn ${item.status ? 'black block' : 'bg-success unblock'} table_viewbtn ms-1`}
+                                                                className={`comman_btn ${item.isblocked ? 'bg-success unblock' : 'black block'} table_viewbtn ms-1`}
 
                                                                 href="javascript:;"
                                                             >
-                                                                <span>{item.status ? 'Block' : 'Unblock'}</span>
+                                                                <span>{item.isblocked ? 'Unblock' : 'Block'}</span>
                                                             </a>
                                                             <a class="comman_btn bg-danger table_viewbtn ms-1" href="javascript:;" onClick={() => delete_listener(item._id)}
                                                             ><span>Delete</span></a>
@@ -343,27 +371,17 @@ const ListenerMangement = () => {
                         </div>
                         <div class="modal-body p-0">
                             <form class="form-design py-4 px-4 row" onSubmit={(e) => e.preventDefault()}>
-                                <div class="form-group col-4">
-                                    <label for="">First Name</label>
+                                <div class="form-group col-12">
+                                    <label for="">Full Name</label>
                                     <input
                                         type="text"
                                         class="form-control"
-                                        name="firstName"
-                                        value={firstName}
-                                        onChange={(e) => setFirstName(e.target.value)}
+                                        name="fullName"
+                                        value={fullName}
+                                        onChange={(e) => setFullName(e.target.value)}
                                     />
                                 </div>
-                                <div class="form-group col-4">
-                                    <label for="">Last Name</label>
-                                    <input
-                                        type="text"
-                                        class="form-control"
-                                        name="lastName"
-                                        value={lastName}
-                                        onChange={(e) => setLastName(e.target.value)}
-                                    />
-                                </div>
-                                <div class="form-group col-4">
+                                <div class="form-group col-12">
                                     <label for="">Email ID</label>
                                     <input
                                         type="text"
@@ -415,7 +433,7 @@ const ListenerMangement = () => {
                                     />
                                 </div>
                                 <div class="form-group mb-0 col-12 text-center">
-                                    <button class="comman_btn d-inline-flex" onClick={()=>updateListenerData()}data-bs-dismiss="modal">
+                                    <button class="comman_btn d-inline-flex" onClick={() => updateListenerData()} data-bs-dismiss="modal">
                                         <span>Update</span>
                                     </button>
                                 </div>

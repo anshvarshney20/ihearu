@@ -1,7 +1,7 @@
 import React from 'react'
 import DashboardNavbar from './DashboardNavbar'
 import axios from 'axios'
-import { useState,useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 const ListenerView = () => {
     const { _id } = useParams();
@@ -63,6 +63,11 @@ const ListenerView = () => {
                                                     </div>
                                                 </div>
                                             </div>
+                                            <div class="form-group col-12">
+                                                <label for="">Full Name</label>
+                                                <input disabled type="text" class="form-control" value={data?.fullName}  />
+                                            </div>
+
                                             <div class="form-group col-6">
                                                 <label for="">Short Decription</label>
                                                 <textarea disabled class="form-control" name="" id="" style={{ height: "80px" }} value={data?.shortDescription}></textarea>
@@ -71,25 +76,17 @@ const ListenerView = () => {
                                                 <label for="">Profile Description</label>
                                                 <textarea disabled class="form-control" name="" id="" style={{ height: "80px" }} value={data?.profileDescription}></textarea>
                                             </div>
-                                            <div class="form-group col-4">
-                                                <label for="">Listener Name</label>
-                                                <input disabled type="text" class="form-control" value={`${data?.firstName} ${data?.lastName}`} />
-                                            </div>
-                                            <div class="form-group col-4">
+                                            <div class="form-group col-6">
                                                 <label for="">Email ID</label>
                                                 <input disabled type="text" value={data?.email} class="form-control" />
                                             </div>
-                                            <div class="form-group col-4">
+                                            <div class="form-group col-6">
                                                 <label for="">Mobile Number</label>
                                                 <input disabled type="text" value={data?.phoneNumber} class="form-control" />
                                             </div>
-                                            <div class="form-group col-12">
-                                                <label for="">Listener Details</label>
-                                                <textarea disabled class="form-control" name="" id="" style={{ height: "60px" }}>Master of Counselling and Practising for 5 years.</textarea>
-                                            </div>
                                             <div class="form-group col-6">
                                                 <label for="">Years Of Experience</label>
-                                                <input disabled type="text" value={data?.experience} class="form-control" />
+                                                <input disabled type="text" value={data?.experienceTime} class="form-control" />
                                             </div>
                                             <div class="form-group col-6">
                                                 <label for="">Commission</label>
@@ -110,20 +107,8 @@ const ListenerView = () => {
                                             <div class="form-group col-12">
                                                 <label for="">Certifications</label>
                                                 <div class="Certifications_img row">
-                                                    <div class="col-md-4">
-                                                        <div class="img_certification">
-                                                            <img src="assets/img/participation-certificate-1-1-724x1024.jpg" alt="" />
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <div class="img_certification">
-                                                            <img src="assets/img/participation-certificate-1-1-724x1024.jpg" alt="" />
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <div class="img_certification">
-                                                            <img src="assets/img/participation-certificate-1-1-724x1024.jpg" alt="" />
-                                                        </div>
+                                                    <div class="col-md-12">
+                                                        <input disabled type="text" value={data?.certification} class="form-control" />
                                                     </div>
                                                 </div>
                                             </div>

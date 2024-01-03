@@ -113,7 +113,7 @@ const AppointmentManagement = () => {
         return matchedListener ? matchedListener.firstName : 'N/A';
     };
 
-    const cancel_appointment = async (_id) => {
+    const cancel_appointment = async (_id,cancellationReason) => {
         try {
             const authToken = localStorage.getItem('access');
             if (!authToken) {
@@ -123,13 +123,16 @@ const AppointmentManagement = () => {
             const headers = {
                 'x-auth-token-admin': authToken,
             };
-
+            const body = JSON.stringify({ cancelReason: cancellationReason });
+    
             const response = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/cancelAppointment/${_id}`, {
                 method: 'PUT',
                 headers: {
                     ...headers,
                     'Content-Type': 'application/json',
                 },
+                body: body,
+
             });
 
             if (!response.ok) {
@@ -234,7 +237,7 @@ const AppointmentManagement = () => {
             return [];
         }
     };
-    const delete_appointment = async (_id, cancellationReason) => {
+    const delete_appointment = async (_id) => {
         try {
             const authToken = localStorage.getItem('access');
             if (!authToken) {
@@ -246,12 +249,10 @@ const AppointmentManagement = () => {
                 'Content-Type': 'application/json',
             };
     
-            const body = JSON.stringify({ cancelNote: cancellationReason });
     
             const response = await fetch(`${process.env.REACT_APP_API_URL}/api/admin/deleteSession/${_id}`, {
-                method: 'POST',  // Use POST or another appropriate method
+                method: 'GET',  // Use POST or another appropriate method
                 headers: headers,
-                body: body,
             });
     
             if (!response.ok) {
@@ -603,13 +604,13 @@ const AppointmentManagement = () => {
                                 className="form-design py-4 px-4 row"
                                 onSubmit={(e) => {
                                     e.preventDefault();
-                                    const cancellationReason = e.target.elements.cancelNote.value;
+                                    const cancellationReason = e.target.elements.cancelReason.value;
                                     cancel_appointment(cancelAppointmentId, cancellationReason);
                                 }}
                             >
                                 <div className="form-group col-12">
                                     <label htmlFor="">Cancel Reason</label>
-                                    <textarea className="form-control" name="cancelNote" id="" style={{ height: '100px' }}></textarea>
+                                    <textarea className="form-control" name="cancelReason" id="" style={{ height: '100px' }}></textarea>
                                 </div>
                                 <div className="form-group mb-0 col-12 text-center">
                                     <button className="comman_btn d-inline-flex" type="submit">
