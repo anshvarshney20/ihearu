@@ -17,7 +17,7 @@ const CategoryManagement = () => {
     const apiBaseUrl = process.env.REACT_APP_API_URL;
     const navigate = useNavigate();
     const [startDate, setStartDate] = useState('');
-    
+
     const [endDate, setEndDate] = useState('');
 
     const handleStartDateChange = (event) => {
@@ -63,7 +63,7 @@ const CategoryManagement = () => {
             console.error('An error occurred:', error);
         }
     };
-        
+
     const handleSearch = () => {
         // Filter data based on date range
         const filtered = data.filter((item) => {
@@ -93,32 +93,32 @@ const CategoryManagement = () => {
     }, [startDate, endDate, data]);
 
     useEffect(() => {
-        const fetchUser = async () => {
-            try {
-                const authToken = localStorage.getItem('access');
-                if (!authToken) {
-                    throw new Error('Authentication token not found');
-                }
-
-                const headers = {
-                    'x-auth-token-admin': authToken,
-                };
-
-                const response = await axios.get(`${apiBaseUrl}/api/admin/getCategories`, {
-                    headers,
-                });
-
-                const userData = response.data.results.categories;
-                setdata(userData);
-                setFilteredData(userData);
-            } catch (error) {
-                console.error('Error fetching user data:', error);
-                throw error;
-            }
-        };
-
         fetchUser();
     }, []);
+    const fetchUser = async () => {
+        try {
+            const authToken = localStorage.getItem('access');
+            if (!authToken) {
+                throw new Error('Authentication token not found');
+            }
+
+            const headers = {
+                'x-auth-token-admin': authToken,
+            };
+
+            const response = await axios.get(`${apiBaseUrl}/api/admin/getCategories`, {
+                headers,
+            });
+
+            const userData = response.data.results.categories;
+            setdata(userData);
+            setFilteredData(userData);
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            throw error;
+        }
+    };
+
 
     const handleNameChange = (event) => {
         setCategoryName(event.target.value);
@@ -183,6 +183,35 @@ const CategoryManagement = () => {
     };
 
     const userList = Array.isArray(filteredData) ? filteredData : [];
+
+    const delete_category = async (_id) => {
+        try {
+            const authToken = localStorage.getItem('access');
+            const headers = {
+                'x-auth-token-admin': authToken,
+            };
+
+            const response = await fetch(`${apiBaseUrl}/api/admin/deleteCategory/${_id}`, {
+                method: 'GET',
+                headers: headers,
+            });
+
+            const responseData = await response.json();
+            if (!responseData.error) {
+                // If deletion is successful, update the originalData and filteredData directly
+                fetchUser()
+
+                // Update the local storage
+
+                alert('Category deleted successfully.');
+            } else {
+                // Handle the case where an error occurred during deletion
+                alert(responseData.message);
+            }
+        } catch (error) {
+            console.error('An error occurred during user deletion:', error);
+        }
+    };
 
     return (
         <>
@@ -335,6 +364,7 @@ const CategoryManagement = () => {
                                                             <a
                                                                 className="comman_btn bg-danger table_viewbtn ms-1"
                                                                 href="javascript:;"
+                                                                onClick={() => delete_category(item._id)}
                                                             >
                                                                 <span>Delete</span>
                                                             </a>

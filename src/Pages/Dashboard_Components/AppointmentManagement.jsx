@@ -486,11 +486,7 @@ const AppointmentManagement = () => {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {data
-                                                    .filter((item) =>
-                                                        item.caller?.fullName.toLowerCase().includes(searchQuery.toLowerCase())
-                                                    )
-                                                    .map((item, index) => (
+                                                {data.map((item, index) => (
                                                         <tr key={index}>
                                                             <td>{item._id}</td>
                                                             <td>{item.caller?.fullName}</td>
