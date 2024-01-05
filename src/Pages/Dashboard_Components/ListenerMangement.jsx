@@ -334,7 +334,7 @@ const ListenerMangement = () => {
                                                         </td>
 
                                                         <td>
-                                                            Listener+
+                                                            {item.type}
                                                         </td>
                                                         <td>
                                                             <Link to={`/listener-view/${item._id}`} class="comman_btn table_viewbtn"><span>View</span></Link>

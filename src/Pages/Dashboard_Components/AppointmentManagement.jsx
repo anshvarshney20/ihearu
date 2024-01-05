@@ -25,6 +25,7 @@ const AppointmentManagement = () => {
     const [editAmount, setEditAmount] = useState('');
     const navigate = useNavigate()
     const apiBaseUrl = process.env.REACT_APP_API_URL;
+    
     useEffect(() => {
         const fetchData = async (page) => {
             try {
@@ -110,7 +111,7 @@ const AppointmentManagement = () => {
 
     const getListenerName = (listenerId) => {
         const matchedListener = listeners.find((listener) => listener._id === listenerId);
-        return matchedListener ? matchedListener.firstName : 'N/A';
+        return matchedListener ? matchedListener.fullName : 'N/A';
     };
 
     const cancel_appointment = async (_id,cancellationReason) => {
@@ -186,7 +187,7 @@ const AppointmentManagement = () => {
             }
 
             // Handle successful postponement if needed
-            console.log('Appointment postponed successfully!');
+            alert('Appointment postponed successfully!');
 
             // Fetch updated data after postponing the appointment
             const updatedData = await fetchUpdatedData();
@@ -263,7 +264,7 @@ const AppointmentManagement = () => {
             }
     
             // Handle successful deletion if needed
-            console.log('Appointment deleted successfully!');
+            alert('Appointment deleted successfully!');
     
             // Fetch updated data after deleting the appointment
             const updatedData = await fetchUpdatedData();

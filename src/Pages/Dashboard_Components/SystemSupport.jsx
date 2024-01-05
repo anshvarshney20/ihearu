@@ -108,13 +108,35 @@ const SystemSupport = () => {
                                                     data.map((item, index) => (
                                                         <tr key={index}>
                                                             <td>{index + 1}</td>
-                                                            <td>{item.listener?.firstName}</td>
+                                                            {/* <td>{item.listener?.fullName}</td>
                                                             <td>{item.listener?.email}</td>
                                                             <td>{item.listener?.phoneNumber}</td>
                                                             <td>{formatDate(item.updatedAt)}</td>
-                                                            <td>{item.concern}</td>
+                                                            <td>{item.concern}</td> */}
+                                                            {item.type === 'Listener' ? (
+                                                                <>
+                                                                    <td>{item.listener?.fullName}</td>
+                                                                    <td>{item.listener?.email}</td>
+                                                                    <td>{item.listener?.phoneNumber}</td>
+                                                                    <td>{formatDate(item.updatedAt)}</td>
+                                                                    <td>{item.concern}</td>
 
-                                                            <td>{item.type}</td> 
+                                                                    {/* Add other caller-specific fields here */}
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <td>{item.caller?.firstName}</td>
+                                                                    <td>{item.caller?.email}</td>
+                                                                    <td>{item.caller?.phoneNumber}</td>
+                                                                    <td>{formatDate(item.updatedAt)}</td>
+                                                                    <td>{item.concern}</td>
+
+                                                                    {/* <td>{item.listener?.email}</td>
+                                                                    <td>{item.listener?.phoneNumber}</td>
+                                                                    Add other listener-specific fields here */}
+                                                                </>
+                                                            )}
+                                                            <td>{item.type}</td>
                                                             <td>In Progress</td>
                                                             <td>
                                                                 <a class="comman_btn table_viewbtn" href="javascript:;"><span>Yes</span></a>

@@ -9,7 +9,6 @@ const CategoryManagement = () => {
     const [categoryImage, setCategoryImage] = useState(null);
     const [searchInput, setSearchInput] = useState('');
     const [cat, setCat] = useState(() => {
-        // Initialize cat state from local storage or an empty object
         const storedCat = localStorage.getItem('categoryStatus');
         return storedCat ? JSON.parse(storedCat) : {};
     });
@@ -17,7 +16,6 @@ const CategoryManagement = () => {
     const apiBaseUrl = process.env.REACT_APP_API_URL;
     const navigate = useNavigate();
     const [startDate, setStartDate] = useState('');
-
     const [endDate, setEndDate] = useState('');
 
     const handleStartDateChange = (event) => {
@@ -28,8 +26,14 @@ const CategoryManagement = () => {
         setEndDate(event.target.value);
     };
 
+    useEffect(() => {
+        const authToken = localStorage.getItem('access');
+        if (!authToken) {
+            navigate('/'); // Redirect to login or any other page if not authenticated
+        }
+    }, [navigate]);
+
     const toggleCategoryStatus = async (id) => {
-        console.log(id);
         try {
             const authToken = localStorage.getItem('access');
             const headers = {
@@ -44,20 +48,16 @@ const CategoryManagement = () => {
             const responseData = await response.json();
 
             if (!responseData.error) {
-                // console.log(responseData.message);
-                // console.log(responseData.results.category);
-
-                // Update the state and store in local storage
-                setCat(prevCat => ({
+                setCat((prevCat) => ({
                     ...prevCat,
-                    [id]: !prevCat[id]
+                    [id]: !prevCat[id],
                 }));
                 localStorage.setItem('categoryStatus', JSON.stringify({
                     ...cat,
-                    [id]: !cat[id]
+                    [id]: !cat[id],
                 }));
             } else {
-                alert(responseData.message);
+                console.error('Error toggling category status:', responseData.message);
             }
         } catch (error) {
             console.error('An error occurred:', error);
@@ -65,13 +65,11 @@ const CategoryManagement = () => {
     };
 
     const handleSearch = () => {
-        // Filter data based on date range
         const filtered = data.filter((item) => {
             const itemDate = new Date(item.updatedAt);
             const start = startDate ? new Date(startDate) : null;
             const end = endDate ? new Date(endDate) : null;
 
-            // Function to format date as yyyy-mm-dd
             const formatDate = (date) => {
                 const year = date.getFullYear();
                 const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -95,11 +93,13 @@ const CategoryManagement = () => {
     useEffect(() => {
         fetchUser();
     }, []);
+
     const fetchUser = async () => {
         try {
             const authToken = localStorage.getItem('access');
             if (!authToken) {
-                throw new Error('Authentication token not found');
+                console.error('Authentication token not found');
+                return;
             }
 
             const headers = {
@@ -115,10 +115,8 @@ const CategoryManagement = () => {
             setFilteredData(userData);
         } catch (error) {
             console.error('Error fetching user data:', error);
-            throw error;
         }
     };
-
 
     const handleNameChange = (event) => {
         setCategoryName(event.target.value);
@@ -151,11 +149,12 @@ const CategoryManagement = () => {
                 console.log(responseData.message);
                 console.log(responseData.results.newCat);
             } else {
-                alert(responseData.message);
+                console.error('Error adding category:', responseData.message);
             }
         } catch (error) {
             console.error('An error occurred:', error);
         }
+        fetchUser()
     };
 
     const handleSubmit = (event) => {
@@ -198,15 +197,10 @@ const CategoryManagement = () => {
 
             const responseData = await response.json();
             if (!responseData.error) {
-                // If deletion is successful, update the originalData and filteredData directly
-                fetchUser()
-
-                // Update the local storage
-
+                fetchUser();
                 alert('Category deleted successfully.');
             } else {
-                // Handle the case where an error occurred during deletion
-                alert(responseData.message);
+                console.error('Error deleting category:', responseData.message);
             }
         } catch (error) {
             console.error('An error occurred during user deletion:', error);
