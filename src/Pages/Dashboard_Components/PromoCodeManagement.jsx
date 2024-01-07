@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import DashboardNavbar from './DashboardNavbar';
+import { useNavigate } from 'react-router-dom';
 
 const PromoCodeManagement = () => {
   const [data, setData] = useState([]);
@@ -24,6 +25,14 @@ const PromoCodeManagement = () => {
   const handleEndDateChange = (event) => {
     setEndDate(event.target.value);
   };
+  const navigate = useNavigate()
+  useEffect(() => {
+    const authToken = localStorage.getItem('access');
+    if (!authToken) {
+        navigate('/'); // Redirect to login or any other page if not authenticated
+    }
+}, [navigate]);
+
 
   const handleSearchs = () => {
     // Filter data based on date range

@@ -1,7 +1,17 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import DashboardNavbar from './DashboardNavbar'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+
 const MasterSettings = () => {
+    const navigate = useNavigate()
+    useEffect(() => {
+        const authToken = localStorage.getItem('access');
+        if (!authToken) {
+            navigate('/'); // Redirect to login or any other page if not authenticated
+        }
+    }, [navigate]);
+
+
     return (
         <>
 

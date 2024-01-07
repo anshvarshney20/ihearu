@@ -27,6 +27,14 @@ const AppointmentManagement = () => {
     const apiBaseUrl = process.env.REACT_APP_API_URL;
     
     useEffect(() => {
+        const authToken = localStorage.getItem('access');
+        if (!authToken) {
+            navigate('/'); // Redirect to login or any other page if not authenticated
+        }
+    }, [navigate]);
+
+
+    useEffect(() => {
         const fetchData = async (page) => {
             try {
                 const authToken = localStorage.getItem('access');

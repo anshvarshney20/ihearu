@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import DashboardNavbar from './DashboardNavbar';
 import axios from 'axios';
 
@@ -7,6 +7,7 @@ const UserManagement = () => {
     const [originalData, setOriginalData] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const navigate = useNavigate()
     const [cat, setCat] = useState(() => {
         // Initialize cat state from local storage or an empty object
         const storedCat = localStorage.getItem('userstats');
@@ -22,11 +23,21 @@ const UserManagement = () => {
     const [appointmentDetails, setAppointmentDetails] = useState('');
 
     const apiBaseUrl = process.env.REACT_APP_API_URL;
+  
+    useEffect(() => {
+        const authToken = localStorage.getItem('access');
+        if (!authToken) {
+            navigate('/'); // Redirect to login or any other page if not authenticated
+        }
+    }, [navigate]);
+
+
     const fetchUser = async () => {
         try {
             const authToken = localStorage.getItem('access');
             if (!authToken) {
-                throw new Error('Authentication token not found');
+                console.warn('Authentication token not found');
+                // You may want to redirect to the login page here
             }
 
             const headers = {
@@ -42,10 +53,9 @@ const UserManagement = () => {
             setFilteredData(userData);
         } catch (error) {
             console.error('Error fetching user data:', error);
-            throw error;
+            // Log the error details or handle it in a way that suits your application
         }
-    };
-
+    }
 
     useEffect(() => {
         fetchUser();

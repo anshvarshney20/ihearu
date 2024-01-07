@@ -8,6 +8,14 @@ const ViewProfile = () => {
     const apiBaseUrl = process.env.REACT_APP_API_URL;
     const navigate = useNavigate()
     useEffect(() => {
+        const authToken = localStorage.getItem('access');
+        if (!authToken) {
+            navigate('/'); // Redirect to login or any other page if not authenticated
+        }
+    }, [navigate]);
+
+
+    useEffect(() => {
         const fetchUser = async () => {
             try {
                 const authToken = localStorage.getItem('access');

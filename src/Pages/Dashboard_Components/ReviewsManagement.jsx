@@ -1,6 +1,17 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import DashboardNavbar from './DashboardNavbar';
+import { useNavigate } from 'react-router-dom';
+
 const ReviewsManagement = () => {
+    const navigate = useNavigate()
+    useEffect(() => {
+        const authToken = localStorage.getItem('access');
+        if (!authToken) {
+            navigate('/'); // Redirect to login or any other page if not authenticated
+        }
+    }, [navigate]);
+
+
     return (
         <>
             <div class="admin_main">

@@ -2,7 +2,7 @@ import React from 'react'
 import DashboardNavbar from './DashboardNavbar'
 import axios from 'axios'
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 const ListenerMangement = () => {
     const [data, setdata] = useState([])
     const apiBaseUrl = process.env.REACT_APP_API_URL;
@@ -21,40 +21,40 @@ const ListenerMangement = () => {
     const [originalData, setOriginalData] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const navigate = useNavigate()
+    useEffect(() => {
+        const authToken = localStorage.getItem('access');
+        if (!authToken) {
+            navigate('/'); // Redirect to login or any other page if not authenticated
+        }
+    }, [navigate]);
+
 
     const fetchUser = async () => {
         try {
-            // Retrieve the authentication token from local storage
             const authToken = localStorage.getItem('access');
-
-            // Check if the token exists
             if (!authToken) {
-                throw new Error('Authentication token not found');
+                console.warn('Authentication token not found');
+                // You may want to redirect to the login page here
             }
 
-            // Set up headers with the authentication token
             const headers = {
                 'x-auth-token-admin': authToken,
             };
 
-            // Make the HTTP request with headers
             const response = await axios.get(`${apiBaseUrl}/api/admin/getAllListeners`, {
                 headers,
             });
 
-            // Assuming the API response contains user data, you can access it like this:
             const userData = response.data.results.listeners;
             setOriginalData(userData);
             setFilteredData(userData);
-
             setdata(userData);
         } catch (error) {
-            // Handle error scenarios here
             console.error('Error fetching user data:', error);
-            throw error; // You may want to throw the error or handle it in a specific way.
+            // Log the error details or handle it in a way that suits your application
         }
-    };
-
+    }
     useEffect(() => {
         fetchUser();
     }, []);

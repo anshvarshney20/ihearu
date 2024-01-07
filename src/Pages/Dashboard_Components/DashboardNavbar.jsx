@@ -1,9 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import logo from '../../Assets/IMG/logo.png'
+
 const DashboardNavbar = () => {
   const location = useLocation();
   const navigate = useNavigate()
+//   useEffect(() => {
+//     const authToken = localStorage.getItem('access');
+//     if (!authToken) {
+//         navigate('/'); // Redirect to login or any other page if not authenticated
+//     }
+// }, [navigate]);
+
+
   const isLinkActive = (pathname) => {
     return location.pathname === pathname;
   };

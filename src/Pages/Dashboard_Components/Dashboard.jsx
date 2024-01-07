@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import DashboardNavbar from './DashboardNavbar'
 import { UserAuthContextProvider,useUserAuth } from '../../Components/AuthContext'
@@ -6,10 +6,13 @@ const Dashboard = () => {
     const navigate = useNavigate()
     const auth = localStorage.getItem('access')
 
-    if (!auth) {
-        navigate('/');
-        return null; // Render nothing here
-    }
+    useEffect(() => {
+        const authToken = localStorage.getItem('access');
+        if (!authToken) {
+            navigate('/'); // Redirect to login or any other page if not authenticated
+        }
+    }, [navigate]);
+
     return (
         <>
             <div class="admin_main">

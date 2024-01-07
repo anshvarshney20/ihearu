@@ -1,12 +1,20 @@
 import React from 'react'
 import DashboardNavbar from './DashboardNavbar'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 const ViewAppointment = () => {
+  const navigate = useNavigate()
   const { _id } = useParams();
   const [data, setData] = useState({});
   const apiBaseUrl = process.env.REACT_APP_API_URL;
+  useEffect(() => {
+    const authToken = localStorage.getItem('access');
+    if (!authToken) {
+        navigate('/'); // Redirect to login or any other page if not authenticated
+    }
+}, [navigate]);
+
 
   useEffect(() => {
     const fetchSession = async () => {

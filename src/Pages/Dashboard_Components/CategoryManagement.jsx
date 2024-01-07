@@ -8,10 +8,7 @@ const CategoryManagement = () => {
     const [categoryName, setCategoryName] = useState('');
     const [categoryImage, setCategoryImage] = useState(null);
     const [searchInput, setSearchInput] = useState('');
-    const [cat, setCat] = useState(() => {
-        const storedCat = localStorage.getItem('categoryStatus');
-        return storedCat ? JSON.parse(storedCat) : {};
-    });
+    const [toggle, setToggle] = useState('');
     const [filteredData, setFilteredData] = useState([]);
     const apiBaseUrl = process.env.REACT_APP_API_URL;
     const navigate = useNavigate();
@@ -48,14 +45,11 @@ const CategoryManagement = () => {
             const responseData = await response.json();
 
             if (!responseData.error) {
-                setCat((prevCat) => ({
-                    ...prevCat,
-                    [id]: !prevCat[id],
+                setToggle(prevToggle => ({
+                    ...prevToggle,
+                    [id]: !prevToggle[id],
                 }));
-                localStorage.setItem('categoryStatus', JSON.stringify({
-                    ...cat,
-                    [id]: !cat[id],
-                }));
+                fetchUser();
             } else {
                 console.error('Error toggling category status:', responseData.message);
             }
@@ -63,7 +57,6 @@ const CategoryManagement = () => {
             console.error('An error occurred:', error);
         }
     };
-
     const handleSearch = () => {
         const filtered = data.filter((item) => {
             const itemDate = new Date(item.updatedAt);
@@ -336,18 +329,17 @@ const CategoryManagement = () => {
                                                         <td>{item.name}</td>
                                                         <td>{formatDate(item.updatedAt)}</td>
                                                         <td>
-                                                            <div className="check_toggle">
+                                                            <div className="check_toggle"  onClick={()=>toggle[item._id]}>
                                                                 <input
                                                                     type="checkbox"
                                                                     name="maintenance"
                                                                     id={`maintenance-${index}`}
                                                                     className="d-none"
-                                                                    checked={cat[item._id]}
+                                                                    checked={item.status}
                                                                     onChange={() => toggleCategoryStatus(item._id)}
                                                                 />
-                                                                <label htmlFor={`maintenance-${index}`}></label>
-                                                            </div>
-                                                        </td>
+                                                                {/* Display the value of item.status */}
+                                                                <label htmlFor={`maintenance-${index}`}></label>                                                            </div>                                                        </td>
                                                         <td>
                                                             <Link
                                                                 to={`/category-view/${item._id}`}

@@ -2,11 +2,19 @@ import React from 'react'
 import DashboardNavbar from './DashboardNavbar'
 import axios from 'axios'
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 const ListenerView = () => {
     const { _id } = useParams();
     const [data, setData] = useState({});
+    const navigate = useNavigate()
     const apiBaseUrl = process.env.REACT_APP_API_URL;
+    useEffect(() => {
+        const authToken = localStorage.getItem('access');
+        if (!authToken) {
+            navigate('/'); // Redirect to login or any other page if not authenticated
+        }
+    }, [navigate]);
+
 
     useEffect(() => {
         const fetchUser = async () => {
