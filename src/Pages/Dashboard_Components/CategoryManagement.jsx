@@ -327,7 +327,7 @@ const CategoryManagement = () => {
                                                             />
                                                         </td>
                                                         <td>{item.name}</td>
-                                                        <td>{formatDate(item.updatedAt)}</td>
+                                                        <td>{formatDate(item.createdAt)}</td>
                                                         <td>
                                                             <div className="check_toggle"  onClick={()=>toggle[item._id]}>
                                                                 <input

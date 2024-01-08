@@ -498,7 +498,7 @@ const AppointmentManagement = () => {
                                                 {data.map((item, index) => (
                                                         <tr key={index}>
                                                             <td>{item._id}</td>
-                                                            <td>{item.caller?.fullName}</td>
+                                                            <td>{item.caller?.firstName} {item.caller?.lastName}</td>
                                                             <td>{item.amount}</td>
                                                             <td>{getListenerName(item.listener)}</td>
                                                             <td>{formatDate(item.date)}</td>
